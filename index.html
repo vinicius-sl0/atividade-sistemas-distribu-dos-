@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de OS e Lucratividade</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===================== MENU LATERAL ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">OS</div>
+      <div>
+        <strong>Controle de OS</strong>
+        <span>Serviços &amp; Lucratividade</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-view="form" type="button" id="navNovaOS">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Nova ordem de serviço
+      </button>
+      <button class="nav-item" data-view="historico" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.9 3.9L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
+        Histórico de OS
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost-dark" type="button" id="btnExportCsvSide">Exportar CSV</button>
+      <small>Dados salvos neste navegador (LocalStorage).</small>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- ===================== CONTEÚDO ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+      </button>
+      <h1 id="pageTitle">Dashboard</h1>
+    </header>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <section class="view active" id="view-dashboard">
+      <div class="filter-bar">
+        <div class="field">
+          <label for="dashDe">De</label>
+          <input type="date" id="dashDe">
+        </div>
+        <div class="field">
+          <label for="dashAte">Até</label>
+          <input type="date" id="dashAte">
+        </div>
+        <div class="field">
+          <label for="dashAgrupar">Agrupar por</label>
+          <select id="dashAgrupar">
+            <option value="mes">Mês</option>
+            <option value="dia">Dia</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" type="button" id="dashLimpar">Limpar filtro</button>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="chart-grid">
+        <div class="card chart-card">
+          <h3>Faturamento por período</h3>
+          <p class="chart-sub">Receita total recebida dos clientes (inclui taxa de cartão repassada)</p>
+          <div class="chart" id="chartFaturamento"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Lucro líquido por período</h3>
+          <p class="chart-sub">Receita total − despesas. Barras vermelhas indicam prejuízo.</p>
+          <div class="chart" id="chartLucro"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Despesas por categoria</h3>
+          <p class="chart-sub">Onde o dinheiro está sendo gasto</p>
+          <div class="chart" id="chartDespesas"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Formas de pagamento</h3>
+          <p class="chart-sub">Quantidade de OS e valor recebido por forma</p>
+          <div class="chart" id="chartPagamentos"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FORMULÁRIO DE OS ===================== -->
+    <section class="view" id="view-form">
+      <form id="osForm" novalidate>
+        <div class="form-layout">
+          <div class="form-col">
+
+            <!-- 1. Dados da OS -->
+            <div class="card form-section">
+              <div class="section-head">
+                <span class="step">1</span>
+                <div>
+                  <h2>Dados da ordem de serviço</h2>
+                  <p>Campos com * são obrigatórios.</p>
+                </div>
+              </div>
+              <div class="grid-3">
+                <div class="field">
+                  <label for="fNumero">Nº da OS *</label>
+                  <input type="text" id="fNumero" autocomplete="off" maxlength="30">
+                  <small class="error" data-for="fNumero"></small>
+                </div>
+                <div class="field">
+                  <label for="fData">Data de abertura *</label>
+                  <input type="date" id="fData">
+                  <small class="error" data-for="fData"></small>
+                </div>
+                <div class="field">
+                  <label for="fFornecedor">Fornecedor das peças</label>
+                  <input type="text" id="fFornecedor" maxlength="80">
+                  <small class="error" data-for="fFornecedor"></small>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="fCliente">Nome do cliente *</label>
+                  <input type="text" id="fCliente" maxlength="100">
+                  <small class="error" data-for="fCliente"></small>
+                </div>
+                <div class="field">
+                  <label for="fContato">Contato / telefone *</label>
+                  <input type="tel" id="fContato" maxlength="40">
+                  <small class="error" data-for="fContato"></small>
+                </div>
+              </div>
+              <div class="field">
+                <label for="fEquipamento">Equipamento *</label>
+                <input type="text" id="fEquipamento" maxlength="100" placeholder="Nome, modelo ou nº de série">
+                <small class="error" data-for="fEquipamento"></small>
+              </div>
+              <div class="field">
+                <label for="fDescricao">Descrição do problema / serviço realizado *</label>
+                <textarea id="fDescricao" rows="3" maxlength="1000"></textarea>
+                <small class="error" data-for="fDescricao"></small>
+              </div>
+            </div>
+
+            <!-- 2. Peças -->
+            <div class="card form-section">
+              <div class="section-head">
+                <span class="step">2</span>
+                <div>
+                  <h2>Peças utilizadas</h2>
+                  <p>Informe o valor pago na compra e o valor cobrado do cliente. Se a peça é repassada sem margem, deixe o valor de venda em branco (usa o valor de compra).</p>
+                </div>
+              </div>
+              <div class="part-editor" id="partEditor">
+                <div class="field span-2">
+                  <label for="pNome">Nome da peça</label>
+                  <input type="text" id="pNome" maxlength="80">
+                </div>
+                <div class="field">
+                  <label for="pQtd">Quantidade</label>
+                  <input type="text" id="pQtd" inputmode="decimal" placeholder="1">
+                </div>
+                <div class="field">
+                  <label for="pCusto">Valor unit. de compra (R$)</label>
+                  <input type="text" id="pCusto" inputmode="decimal" class="money" placeholder="0,00">
+                </div>
+                <div class="field">
+                  <label for="pVenda">Valor unit. de venda (R$)</label>
+                  <input type="text" id="pVenda" inputmode="decimal" class="money" placeholder="= compra">
+                </div>
+                <div class="part-preview" id="partPreview">Total da peça: R$ 0,00</div>
+                <div class="part-actions">
+                  <button class="btn btn-primary" type="button" id="btnAddPeca">+ Adicionar peça</button>
+                  <button class="btn btn-secondary hidden" type="button" id="btnCancelPeca">Cancelar edição</button>
+                </div>
+                <small class="error span-all" id="pecaErro"></small>
+              </div>
+
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Peça</th>
+                      <th class="num">Qtd</th>
+                      <th class="num">Compra unit.</th>
+                      <th class="num">Custo total</th>
+                      <th class="num">Venda unit.</th>
+                      <th class="num">Venda total</th>
+                      <th class="actions-col">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pecasBody"></tbody>
+                  <tfoot id="pecasFoot"></tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- 3. Custos e valor do serviço -->
+            <div class="card form-section">
+              <div class="section-head">
+                <span class="step">3</span>
+                <div>
+                  <h2>Custos e valor do serviço</h2>
+                  <p>Cada custo é registrado separadamente. O custo das peças vem da seção 2.</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="fFrete">Transporte / frete (R$)</label>
+                  <input type="text" id="fFrete" inputmode="decimal" class="money" placeholder="0,00">
+                  <small class="error" data-for="fFrete"></small>
+                </div>
+                <div class="field">
+                  <label for="fServico">Valor do serviço – mão de obra (R$)</label>
+                  <input type="text" id="fServico" inputmode="decimal" class="money" placeholder="0,00">
+                  <small class="error" data-for="fServico"></small>
+                </div>
+              </div>
+
+              <h4 class="sub-title">Outros custos adicionais</h4>
+              <div class="cost-editor">
+                <div class="field">
+                  <label for="cDesc">Descrição do custo</label>
+                  <input type="text" id="cDesc" maxlength="80" placeholder="Ex.: material de consumo">
+                </div>
+                <div class="field">
+                  <label for="cValor">Valor (R$)</label>
+                  <input type="text" id="cValor" inputmode="decimal" class="money" placeholder="0,00">
+                </div>
+                <div class="cost-actions">
+                  <button class="btn btn-primary" type="button" id="btnAddCusto">+ Adicionar custo</button>
+                </div>
+                <small class="error span-all" id="custoErro"></small>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr><th>Descrição</th><th class="num">Valor</th><th class="actions-col">Ações</th></tr>
+                  </thead>
+                  <tbody id="custosBody"></tbody>
+                </table>
+              </div>
+
+              <div class="cost-summary" id="costSummary"></div>
+            </div>
+
+            <!-- 4. Desconto -->
+            <div class="card form-section">
+              <div class="section-head">
+                <span class="step">4</span>
+                <div>
+                  <h2>Desconto</h2>
+                  <p>Aplicado <strong>somente sobre o valor do serviço (mão de obra)</strong>. Nunca sobre as peças.</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="fDescontoTipo">Tipo de desconto</label>
+                  <select id="fDescontoTipo">
+                    <option value="valor">Em reais (R$)</option>
+                    <option value="percent">Em porcentagem (%)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="fDescontoValor" id="lblDesconto">Desconto (R$)</label>
+                  <input type="text" id="fDescontoValor" inputmode="decimal" placeholder="0">
+                  <small class="error" data-for="fDescontoValor"></small>
+                </div>
+              </div>
+              <div class="info-box" id="discountSummary"></div>
+            </div>
+
+            <!-- 5. Pagamento -->
+            <div class="card form-section">
+              <div class="section-head">
+                <span class="step">5</span>
+                <div>
+                  <h2>Forma de pagamento</h2>
+                  <p>No cartão de crédito é cobrada do cliente uma taxa de 3% por parcela sobre o valor final da venda.</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="fPagamento">Forma de pagamento *</label>
+                  <select id="fPagamento">
+                    <option value="">Selecione...</option>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">PIX</option>
+                    <option value="debito">Cartão de débito</option>
+                    <option value="credito">Cartão de crédito</option>
+                    <option value="transferencia">Transferência bancária</option>
+                  </select>
+                  <small class="error" data-for="fPagamento"></small>
+                </div>
+                <div class="field hidden" id="parcelasField">
+                  <label for="fParcelas">Quantidade de parcelas</label>
+                  <select id="fParcelas"></select>
+                </div>
+              </div>
+              <label class="check hidden" id="taxaRetidaField">
+                <input type="checkbox" id="fTaxaRetida">
+                <span>A operadora do cartão retém essa taxa (lançar o repasse como despesa)</span>
+              </label>
+              <div class="info-box hidden" id="cardSummary"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" type="button" id="btnCancelarOS">Cancelar</button>
+              <button class="btn btn-primary btn-lg" type="submit" id="btnSalvarOS">Salvar ordem de serviço</button>
+            </div>
+          </div>
+
+          <!-- Painel financeiro (atualização automática) -->
+          <aside class="panel-col">
+            <div class="card fin-panel" id="finPanel"></div>
+          </aside>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================== HISTÓRICO ===================== -->
+    <section class="view" id="view-historico">
+      <div class="filter-bar">
+        <div class="field">
+          <label for="hCliente">Cliente</label>
+          <input type="search" id="hCliente" placeholder="Buscar por nome">
+        </div>
+        <div class="field">
+          <label for="hNumero">Nº da OS</label>
+          <input type="search" id="hNumero" placeholder="Buscar por número">
+        </div>
+        <div class="field">
+          <label for="hDe">De</label>
+          <input type="date" id="hDe">
+        </div>
+        <div class="field">
+          <label for="hAte">Até</label>
+          <input type="date" id="hAte">
+        </div>
+        <button class="btn btn-secondary" type="button" id="hLimpar">Limpar</button>
+        <button class="btn btn-primary" type="button" id="btnExportCsv">Exportar CSV</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Nº OS</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Equipamento</th>
+                <th>Pagamento</th>
+                <th class="num">Receita</th>
+                <th class="num">Despesas</th>
+                <th class="num">Lucro líquido</th>
+                <th class="actions-col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+            <tfoot id="histFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== MODAIS ===================== -->
+  <div class="modal" id="detailModal" aria-hidden="true">
+    <div class="modal-box modal-lg" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="modal-head">
+        <h2 id="detailTitle">Detalhes da OS</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary" type="button" id="detailPrintCliente">Imprimir / PDF (cliente)</button>
+        <button class="btn btn-secondary" type="button" id="detailPrintCompleto">Imprimir / PDF (completo)</button>
+        <button class="btn btn-primary" type="button" id="detailEdit">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="confirmModal" aria-hidden="true">
+    <div class="modal-box modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-head">
+        <h2 id="confirmTitle">Confirmar</h2>
+      </div>
+      <div class="modal-body"><p id="confirmMsg"></p></div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary" type="button" id="confirmNo">Cancelar</button>
+        <button class="btn btn-danger" type="button" id="confirmYes">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="chartTooltip" role="status"></div>
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <!-- Área usada somente na impressão / PDF -->
+  <div id="printArea"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
